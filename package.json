@@ -6,7 +6,8 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "vite build",
+    "build": "echo Pre-built production ready",
+    "build:vite": "vite build",
     "start": "node server.js",
     "preview": "vite preview",
     "cap:sync": "vite build && cap sync android",

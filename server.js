@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import path from 'path';
+import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { MsEdgeTTS, OUTPUT_FORMAT } from 'msedge-tts';
 
@@ -189,14 +190,20 @@ app.post('/api/tts', async (req, res) => {
   }
 });
 
-// Serve Vite Production Build
+// Serve static assets (dist/ if present, otherwise root directory)
 const distPath = path.join(__dirname, 'dist');
-app.use(express.static(distPath, { maxAge: '1h' }));
+if (fs.existsSync(distPath)) {
+  app.use(express.static(distPath, { maxAge: '1h' }));
+}
+app.use(express.static(__dirname, { maxAge: '1h' }));
 
 // SPA Fallback: Serve index.html for any unhandled GET route
 app.use((req, res, next) => {
   if (req.method === 'GET' && !req.path.startsWith('/api')) {
-    return res.sendFile(path.join(distPath, 'index.html'));
+    const indexPath = fs.existsSync(path.join(distPath, 'index.html'))
+      ? path.join(distPath, 'index.html')
+      : path.join(__dirname, 'index.html');
+    return res.sendFile(indexPath);
   }
   next();
 });

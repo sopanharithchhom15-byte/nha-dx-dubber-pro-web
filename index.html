@@ -1,0 +1,1429 @@
+<!DOCTYPE html>
+<html lang="km">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="theme-color" content="#070a12" />
+  <meta name="description" content="កម្មវិធី Transcribe & Dubbing វីដេអូជាភាសាខ្មែរ សម្រាប់ Tablet និងទូរស័ព្ទ Android" />
+  <title>Nha DX Dubber Pro</title>
+  
+  <!-- Khmer & Studio Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Battambang:wght@400;700&family=Hanuman:wght@400;700&family=Inter:wght@400;500;600;700;800&family=Kantumruy+Pro:wght@300;400;500;600;700&family=Moul&family=Siemreap&display=swap" rel="stylesheet">
+  
+  <link rel="stylesheet" href="/src/style.css" />
+</head>
+<body class="selection:bg-indigo-500 selection:text-white">
+  <!-- Global Top Progress Loading Bar -->
+  <div id="global-loading-bar-container" class="global-loading-bar-container hidden">
+    <div id="global-loading-bar-fill" class="global-loading-bar-fill" style="width: 0%"></div>
+  </div>
+
+  <div id="app" class="flex flex-col min-h-screen">
+    <!-- Top Navigation Bar -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="logo-area" id="header-logo-area">
+          <div class="logo-icon-badge">
+            <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.87a.5.5 0 0 0-.752-.432L16 10.5"/>
+              <rect x="2" y="6" width="14" height="12" rx="3"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">
+              <span class="gradient-text">Nha DX Dubber</span> <span class="badge-pro">PRO</span>
+            </div>
+            <div class="brand-subtitle">
+              <span>Transcribe & Dubbing ខ្មែរ</span>
+              <span class="brand-model-pill" id="header-model-pill">Gemini 3.8</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="header-actions">
+          <button id="btn-batch-process" class="btn btn-emerald hidden">
+            <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+            <span>ដំណើរការទាំងអស់ (<span id="batch-count">0</span>)</span>
+          </button>
+          
+          <button id="btn-open-settings" class="btn btn-secondary">
+            <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            <span class="hidden sm:inline">ការកំណត់ (API)</span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Workspace Layout -->
+    <main class="main-container">
+      <!-- Left Column: Video Queue & Batch List -->
+      <section class="panel queue-panel" id="panel-queue">
+        <div class="panel-header">
+          <div class="flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
+            <h2 class="text-base font-semibold text-white">បញ្ជី Video (<span id="queue-total">0</span>)</h2>
+          </div>
+          <button id="btn-clear-queue" class="text-xs text-slate-400 hover:text-rose-400 transition" title="លុបទាំងអស់">លុបទាំងអស់</button>
+        </div>
+
+        <!-- Video Upload Dropzone (Single or Batch) -->
+        <div id="dropzone" class="dropzone">
+          <input type="file" id="video-file-input" multiple accept="video/*" class="hidden" />
+          <div class="dropzone-content">
+            <div class="dropzone-icon">
+              <svg class="w-5 h-5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                <polyline points="17 8 12 3 7 8"/>
+                <line x1="12" y1="3" x2="12" y2="15"/>
+              </svg>
+            </div>
+            <div class="dropzone-text-group">
+              <div class="dropzone-text">
+                <span class="font-semibold text-indigo-300">ជ្រើសរើស Video ចូល</span> ឬ អូសទម្លាក់
+              </div>
+              <div class="dropzone-hint">អាចដាក់ម្តងមួយ ឬច្រើន (MP4, MOV, MKV, WebM)</div>
+            </div>
+          </div>
+        </div>
+        <!-- Batch Action Bar (Appears when >= 2 videos in queue) -->
+        <div id="batch-actions-bar" class="p-2 mb-2 rounded-xl bg-slate-800/80 border border-slate-700/60 flex items-center justify-between gap-1.5 flex-wrap hidden">
+          <div class="text-[11px] text-slate-300 font-semibold flex items-center gap-1.5">
+            <span class="text-sm">📦</span>
+            <span>Batch Video (<span id="batch-bar-count">0</span>)៖</span>
+          </div>
+          <div class="flex items-center gap-1.5 flex-wrap">
+            <button type="button" id="btn-batch-apply-effects-bar" class="btn btn-xs btn-purple shadow-sm font-semibold" title="អនុវត្ត Effects & Subtitle លើ Video ទាំងអស់">
+              <span>✨ Apply All Effects</span>
+            </button>
+            <button type="button" id="btn-batch-render-bar" class="btn btn-xs btn-emerald shadow-sm font-semibold" title="Render & Download វីដេអូទាំងអស់">
+              <span>⚡ Batch Render</span>
+            </button>
+            <button type="button" id="btn-batch-merge-bar" class="btn btn-xs btn-purple shadow-sm font-semibold" title="ផ្គុំវីដេអូទាំងអស់ចូលគ្នាជា 1 File">
+              <span>🎬 Merge Video</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Queue Item List -->
+        <div id="video-queue-list" class="queue-list custom-scroll">
+          <div id="queue-empty-state" class="empty-state">
+            <svg class="w-12 h-12 text-slate-600 mb-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+              <rect x="2" y="4" width="20" height="16" rx="2.18"/>
+              <path d="m10 8 6 4-6 4V8z"/>
+            </svg>
+            <p class="text-sm text-slate-400">មិនទាន់មាន Video នៅក្នុងបញ្ជីនៅឡើយ</p>
+            <p class="text-xs text-slate-500 mt-1">សូមដាក់បញ្ចូល Video ដើម្បីចាប់ផ្តើម Transcribe & Dubbing</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Right Column: Studio Workspace (Preview, Subtitles, Dubbing, Export) -->
+      <section class="panel studio-panel" id="panel-studio">
+        <!-- Empty State (When no video selected) -->
+        <div id="studio-empty-state" class="studio-empty">
+          <div class="max-w-md">
+            <div class="empty-state-floating-icon">
+              <svg class="w-9 h-9" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5 3 19 12 5 21 5 3"/>
+              </svg>
+            </div>
+            <h3 class="text-lg font-bold text-white mb-2">សូមជ្រើសរើស Video មួយពីបញ្ជីខាងឆ្វេង</h3>
+            <p class="text-sm text-slate-400 leading-relaxed mb-4">
+              ពេលជ្រើសរើសរួច លោកអ្នកអាចប្រើប្រាស់ <strong>Gemini AI (Model 2.5 ឡើងទៅ 3.8)</strong> ដើម្បីបកប្រែ Transcribe ជាភាសាខ្មែរ រួច Dubbing ដោយ <strong>Microsoft Neural Voices</strong> និង Export ចេញជា Video ពេញលេញរក្សាទុកក្នុង Gallery។
+            </p>
+            <button type="button" class="btn btn-primary" onclick="document.getElementById('video-file-input').click()">
+              <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 5v14M5 12h14"/></svg>
+              <span>បញ្ចូល Video ឥឡូវនេះ</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Active Studio Workspace -->
+        <div id="studio-active-content" class="studio-active hidden">
+          <!-- Active Video Topbar -->
+          <div class="studio-topbar">
+            <div class="flex items-center gap-3 overflow-hidden">
+              <div class="status-indicator active" id="active-video-status-dot"></div>
+              <div class="truncate">
+                <h3 id="active-video-title" class="font-semibold text-white truncate text-sm sm:text-base">Video Name.mp4</h3>
+                <div class="text-xs text-slate-400 flex items-center gap-3">
+                  <span id="active-video-duration">00:00</span>
+                  <span id="active-video-res">1080p</span>
+                  <span id="active-video-status-text" class="text-indigo-400 font-medium">រង់ចាំ</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Action Buttons for Current Video -->
+            <div class="studio-action-chips flex items-center gap-1.5 overflow-x-auto flex-nowrap py-1">
+              <!-- One-Click Auto Process Button -->
+              <button id="btn-auto-all" class="btn btn-magic" title="ដំណើរការស្វ័យប្រវត្តិ Transcribe + Dubbing + Export ក្នុង 1-Click">
+                <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+                </svg>
+                <span>ដំណើរការស្វ័យប្រវត្តិ (1-Click)</span>
+              </button>
+
+              <button id="btn-transcribe-current" class="btn btn-primary" title="Transcribe ជាមួយ Gemini">
+                <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="m12 3-1.912 5.813a2 2 0 0 1-1.275 1.275L3 12l5.813 1.912a2 2 0 0 1 1.275 1.275L12 21l1.912-5.813a2 2 0 0 1 1.275-1.275L21 12l-5.813-1.912a2 2 0 0 1-1.275-1.275L12 3Z"/>
+                </svg>
+                <span>Transcribe (Gemini)</span>
+              </button>
+
+              <button id="btn-dub-current" class="btn btn-amber hidden" title="Dubbing សំឡេងខ្មែរ Microsoft TTS">
+                <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+                  <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+                  <line x1="12" y1="19" x2="12" y2="22"/>
+                </svg>
+                <span>Dubbing (TTS)</span>
+              </button>
+
+              <button id="btn-export-srt-top" class="btn btn-purple hidden" title="Export ឯកសារ SRT ទុកប្រើប្រាស់ពេលក្រោយ">
+                <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                  <polyline points="14 2 14 8 20 8"/>
+                  <line x1="12" y1="18" x2="12" y2="12"/>
+                  <polyline points="9 15 12 18 15 15"/>
+                </svg>
+                <span>Export SRT</span>
+              </button>
+
+              <button id="btn-export-current" class="btn btn-emerald hidden shadow-md shadow-emerald-500/20 font-semibold" title="Download / Export Video ចុងក្រោយ">
+                <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>📥 Download Video</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Workflow Step Wizard Indicator -->
+          <div class="workflow-wizard">
+            <div class="wizard-step done cursor-pointer" id="wizard-step-1">
+              <div class="wizard-step-circle">✓</div>
+              <div class="wizard-step-title">១. ជ្រើសរើស Video</div>
+            </div>
+            <div class="wizard-step active cursor-pointer" id="wizard-step-2">
+              <div class="wizard-step-circle">២</div>
+              <div class="wizard-step-title">២. Transcribe (Gemini)</div>
+            </div>
+            <div class="wizard-step cursor-pointer" id="wizard-step-3">
+              <div class="wizard-step-circle">៣</div>
+              <div class="wizard-step-title">៣. Dubbing (TTS)</div>
+            </div>
+            <div class="wizard-step cursor-pointer" id="wizard-step-4" title="ចុចដើម្បី Download / Export Video">
+              <div class="wizard-step-circle">៤</div>
+              <div class="wizard-step-title">៤. Download Video</div>
+            </div>
+          </div>
+
+          <!-- Live Task Progress / Loading Bar Card (Easy Progress Tracking) -->
+          <div id="studio-progress-card" class="task-progress-card hidden">
+            <div class="task-progress-header">
+              <div class="flex items-center gap-3 min-w-0">
+                <div class="task-progress-icon-badge" id="task-progress-icon-badge">
+                  <div class="task-progress-spinner"></div>
+                </div>
+                <div class="min-w-0">
+                  <div class="flex items-center gap-2">
+                    <h4 id="task-progress-title" class="task-progress-title truncate">កំពុងដំណើរការ...</h4>
+                    <span id="task-progress-badge" class="task-progress-badge">AI Task</span>
+                  </div>
+                  <p id="task-progress-detail" class="task-progress-detail truncate">សូមរង់ចាំបន្តិច...</p>
+                </div>
+              </div>
+              <div class="text-right shrink-0">
+                <div class="flex items-baseline justify-end gap-0.5">
+                  <span id="task-progress-percent" class="task-progress-percent-number">0</span>
+                  <span class="text-xs text-cyan-300 font-bold">%</span>
+                </div>
+                <span id="task-progress-subtext" class="task-progress-subtext">កំពុងដំណើរការ</span>
+              </div>
+            </div>
+            <div class="task-progress-bar-bg">
+              <div id="task-progress-bar-fill" class="task-progress-bar-fill" style="width: 0%">
+                <div class="task-progress-glow"></div>
+              </div>
+            </div>
+
+            <!-- Quick Action Bar (Visible when task finishes 100%) -->
+            <div id="task-progress-actions" class="hidden pt-2.5 mt-2.5 border-t border-slate-700/60 flex items-center justify-between gap-2 flex-wrap">
+              <span class="text-xs text-emerald-300 font-medium">✓ រួចរាល់! អាចទាញយក Video បានភ្លាមៗ</span>
+              <div class="flex items-center gap-2 flex-wrap">
+                <button type="button" id="btn-quick-download" class="btn btn-xs btn-emerald shadow-md shadow-emerald-500/20 font-semibold">
+                  <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>📥 Download Video ឥឡូវនេះ</span>
+                </button>
+                <button type="button" id="btn-quick-dub" class="btn btn-xs btn-amber hidden font-semibold">
+                  <span>🎙️ Dubbing សំឡេង</span>
+                </button>
+                <button type="button" id="btn-quick-batch-render" class="btn btn-xs btn-emerald hidden font-semibold" title="Render វីដេអូទាំងអស់ក្នុង Batch">
+                  <span>⚡ Batch Render</span>
+                </button>
+                <button type="button" id="btn-quick-batch-merge" class="btn btn-xs btn-purple hidden font-semibold" title="ផ្គុំវីដេអូទាំងអស់ចូលគ្នា">
+                  <span>🎬 Merge Video</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Video Player & Audio Settings Viewport -->
+          <div class="studio-viewport-grid">
+            <!-- Left: Video Player Section -->
+            <div class="player-container" id="section-player">
+              <div class="video-wrapper">
+                <video id="studio-video" preload="auto" playsinline webkit-playsinline></video>
+                <!-- Live Subtitle Overlay -->
+                <div id="subtitle-overlay" class="subtitle-overlay hidden">
+                  <span id="subtitle-overlay-text">អត្ថបទរត់នៅលើ Video...</span>
+                </div>
+                <!-- Live Blur Box Area (Interactive Draggable & Resizable) -->
+                <div id="preview-blur-box" class="preview-blur-box hidden">
+                  <div class="blur-box-content">
+                    <span class="blur-box-label">🔍 តំបន់ Blur (អូសកែរ/ពង្រីក)</span>
+                  </div>
+                  <div id="blur-box-resize-handle" class="blur-box-resize-handle" title="អូសដើម្បីសារេទំហំ (Resize)"></div>
+                </div>
+                <!-- Live Logo Overlay -->
+                <img id="preview-logo-overlay" class="preview-logo-overlay hidden pointer-events-none" alt="Logo" />
+                <!-- Live Running Marquee Banner (Draggable & Resizable) -->
+                <div id="preview-marquee-banner" class="preview-marquee-banner hidden" title="អូសដើម្បីផ្លាស់ប្តូរទីតាំង (Drag to Move)">
+                  <div class="marquee-drag-handle-pill">↕ អូសកែរទីតាំង</div>
+                  <span id="preview-marquee-text" class="preview-marquee-text"></span>
+                </div>
+              </div>
+
+              <!-- Custom Video Controls -->
+              <div class="player-controls">
+                <button id="btn-play-pause" class="control-btn" title="Play/Pause">
+                  <svg id="icon-play" class="w-5 h-5" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <svg id="icon-pause" class="w-5 h-5 hidden" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                </button>
+
+                <div class="time-slider-wrapper">
+                  <input type="range" id="video-seekbar" min="0" max="100" value="0" step="0.1" class="slider seekbar" />
+                </div>
+
+                <div class="time-display text-xs font-mono text-slate-300">
+                  <span id="time-current">00:00</span> / <span id="time-duration">00:00</span>
+                </div>
+
+                <button id="btn-toggle-subtitles" class="control-btn active" title="បើក/បិទ អក្សររត់">
+                  <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/><path d="M8 11h2"/><path d="M8 15h6"/><path d="M14 11h2"/></svg>
+                </button>
+              </div>
+
+              <!-- Video Effects & Branding Card (Logo, Marquee, Blur, Flip) -->
+              <div class="video-effects-card mt-2.5 p-3 rounded-xl bg-slate-900/80 border border-slate-800 shadow-md space-y-2.5" id="card-video-effects">
+                <div class="effects-card-header flex items-center justify-between cursor-pointer select-none" id="btn-toggle-effects-card">
+                  <div class="flex items-center gap-2">
+                    <span class="text-sm">✨</span>
+                    <h4 class="text-xs sm:text-sm font-semibold text-white">ផលប៉ះពាល់វីដេអូ & Branding (Effects)</h4>
+                    <span id="effects-active-badge" class="hidden text-[10px] font-bold px-1.5 py-0.2 rounded bg-indigo-500/20 text-indigo-300 border border-indigo-500/30">បើក</span>
+                  </div>
+                  <div class="flex items-center gap-1.5 text-xs text-slate-400">
+                    <button type="button" id="btn-apply-effects-all-header" class="btn btn-xs btn-purple py-0.5 px-2 text-[10px] font-semibold flex items-center gap-1 shadow-sm" title="អនុវត្ត Effects ទាំងអស់ (អក្សររត់, Logo, Blur, Flip) លើ Video ទាំងអស់ក្នុងបញ្ជី">
+                      <span>✨ ដាក់លើ Video ទាំងអស់</span>
+                    </button>
+                    <span id="effects-toggle-icon" class="text-xs transition-transform duration-200">▼</span>
+                  </div>
+                </div>
+
+                <div class="effects-card-body space-y-2.5 pt-1" id="effects-card-body">
+                  <!-- 0. Effect Templates Toolbar (Built-in Presets + Save Custom Template) -->
+                  <div class="p-2.5 rounded-lg bg-indigo-950/40 border border-indigo-500/30 space-y-2" id="effects-templates-container">
+                    <div class="flex items-center justify-between flex-wrap gap-1">
+                      <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <span class="text-sm">🎯</span>
+                        <span>ពុម្ពផលប៉ះពាល់ (Effect Templates)</span>
+                      </div>
+                      <div class="flex items-center gap-1.5">
+                        <button type="button" id="btn-open-save-template" class="btn btn-xs btn-primary py-0.5 px-2 text-[10px] font-medium flex items-center gap-1 shadow-sm" title="រក្សាទុកការកំណត់ Effects លើ Video នេះជា Template ថ្មី">
+                          <span>💾 រក្សាទុក Template</span>
+                        </button>
+                        <button type="button" id="btn-apply-template-all" class="btn btn-xs btn-purple py-0.5 px-2 text-[10px] font-medium flex items-center gap-1 shadow-sm" title="អនុវត្ត Effects ទាំងអស់នេះលើគ្រប់ Video ក្នុង Queue">
+                          <span>✨ ដាក់លើទាំងអស់</span>
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Inline Save Template Form (Hidden by default) -->
+                    <div id="save-template-form" class="hidden p-2 rounded-lg bg-slate-900/95 border border-indigo-500/50 space-y-1.5 shadow-md">
+                      <div class="flex items-center justify-between">
+                        <label class="text-[11px] text-indigo-300 font-medium">ដាក់ឈ្មោះ Template ថ្មី៖</label>
+                        <button type="button" id="btn-cancel-save-template" class="text-slate-400 hover:text-white text-xs p-0.5">✕</button>
+                      </div>
+                      <div class="flex items-center gap-1.5">
+                        <input type="text" id="input-template-name" placeholder="ឧ. Brand TikTok, Gaming Top, ..." class="form-input text-xs flex-1 py-1" />
+                        <button type="button" id="btn-confirm-save-template" class="btn btn-xs btn-emerald px-2.5 py-1 text-xs font-semibold">
+                          រក្សាទុក
+                        </button>
+                      </div>
+                    </div>
+
+                    <!-- Templates Carousel / Chips List -->
+                    <div class="flex items-center gap-1.5 overflow-x-auto custom-scroll pb-1 pt-0.5" id="template-chips-list">
+                      <!-- Dynamically populated -->
+                    </div>
+                  </div>
+
+                  <!-- 1. Flip Video (Horizontal Mirror) -->
+                  <div class="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 flex items-center justify-between">
+                    <div>
+                      <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-cyan-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <polyline points="17 1 21 5 17 9"/>
+                          <path d="M3 11V9a4 4 0 0 1 4-4h14"/>
+                          <polyline points="7 23 3 19 7 15"/>
+                          <path d="M21 13v2a4 4 0 0 1-4 4H3"/>
+                        </svg>
+                        <span>ត្រឡប់វីដេអូឆ្វេង-ស្តាំ (Flip Horizontal / Mirror)</span>
+                      </div>
+                      <div class="text-[11px] text-slate-400 mt-0.5">Flip Video ផ្តេក (ជួយគេចពី Copyright និងកែប្លង់)</div>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="chk-flip-video" />
+                      <span class="slider-toggle"></span>
+                    </label>
+                  </div>
+
+                  <!-- 2. Blur Video Effect (Full Frame or Custom Box) -->
+                  <div class="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <circle cx="12" cy="12" r="10"/>
+                          <circle cx="12" cy="12" r="6"/>
+                          <circle cx="12" cy="12" r="2"/>
+                        </svg>
+                        <span>ព្រិលរូបភាពវីដេអូ (Blur Effect)</span>
+                      </div>
+                      <span id="blur-val" class="text-xs font-mono text-purple-300">បិទ</span>
+                    </div>
+
+                    <input type="range" id="slider-blur" min="0" max="25" value="0" step="1" class="slider" />
+                    <div class="flex items-center gap-1.5 text-[10px]">
+                      <button type="button" class="btn-blur-preset py-0.5 px-2 rounded bg-slate-700/70 text-slate-300 hover:text-white" data-blur="0">បិទ (0px)</button>
+                      <button type="button" class="btn-blur-preset py-0.5 px-2 rounded bg-slate-700/70 text-slate-300 hover:text-white" data-blur="3">ស្រាល (3px)</button>
+                      <button type="button" class="btn-blur-preset py-0.5 px-2 rounded bg-slate-700/70 text-slate-300 hover:text-white" data-blur="8">មធ្យម (8px)</button>
+                      <button type="button" class="btn-blur-preset py-0.5 px-2 rounded bg-slate-700/70 text-slate-300 hover:text-white" data-blur="16">ខ្លាំង (16px)</button>
+                    </div>
+
+                    <!-- Blur Mode Selector -->
+                    <div class="pt-1.5 border-t border-slate-700/50 space-y-1.5">
+                      <div class="flex items-center justify-between text-xs">
+                        <span class="text-[11px] text-slate-400">ទម្រង់ Blur (Mode):</span>
+                        <div class="flex items-center gap-1">
+                          <button type="button" id="btn-blur-mode-box" class="btn-xs py-0.5 px-2 rounded bg-indigo-600 text-white font-semibold shadow-sm" data-mode="box">📦 ប្រអប់ Blur (អូសកែរ/សារេទំហំ)</button>
+                          <button type="button" id="btn-blur-mode-full" class="btn-xs py-0.5 px-2 rounded bg-slate-700 text-slate-300" data-mode="full">ពេញផ្ទៃវីដេអូ</button>
+                        </div>
+                      </div>
+
+                      <!-- Blur Box Controls (Visible when mode is 'box') -->
+                      <div id="blur-box-controls" class="space-y-1.5 bg-slate-900/70 p-2 rounded-lg border border-slate-800">
+                        <div class="flex items-center justify-between text-[11px] text-slate-400">
+                          <span>💡 អាចអូសលើប្រអប់ផ្ទាល់ ឬសារេខាងក្រោម៖</span>
+                          <span class="text-cyan-400 font-mono text-[10px]" id="blur-box-coords-text">X:20% Y:20% W:50% H:35%</span>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2 text-xs">
+                          <div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400">
+                              <span>ទីតាំង X (ឆ្វេង-ស្តាំ)</span>
+                              <span id="blur-box-x-val" class="font-mono text-cyan-300">20%</span>
+                            </div>
+                            <input type="range" id="slider-blur-box-x" min="0" max="90" value="20" class="slider" />
+                          </div>
+                          <div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400">
+                              <span>ទីតាំង Y (លើ-ក្រោម)</span>
+                              <span id="blur-box-y-val" class="font-mono text-cyan-300">20%</span>
+                            </div>
+                            <input type="range" id="slider-blur-box-y" min="0" max="90" value="20" class="slider" />
+                          </div>
+                          <div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400">
+                              <span>ទទឹង (Width)</span>
+                              <span id="blur-box-w-val" class="font-mono text-cyan-300">50%</span>
+                            </div>
+                            <input type="range" id="slider-blur-box-w" min="10" max="100" value="50" class="slider" />
+                          </div>
+                          <div>
+                            <div class="flex justify-between items-center text-[10px] text-slate-400">
+                              <span>កម្ពស់ (Height)</span>
+                              <span id="blur-box-h-val" class="font-mono text-cyan-300">35%</span>
+                            </div>
+                            <input type="range" id="slider-blur-box-h" min="5" max="80" value="35" class="slider" />
+                          </div>
+                        </div>
+
+                        <!-- Quick Box Preset Chips -->
+                        <div class="flex items-center gap-1 pt-0.5 text-[10px] flex-wrap">
+                          <span class="text-slate-500">គំរូកាត់ត៖</span>
+                          <button type="button" class="btn-blur-box-preset py-0.5 px-1.5 rounded bg-slate-800 text-slate-300 hover:text-white" data-preset="center">កណ្តាល</button>
+                          <button type="button" class="btn-blur-box-preset py-0.5 px-1.5 rounded bg-slate-800 text-slate-300 hover:text-white" data-preset="top">បាំង Logo លើ</button>
+                          <button type="button" class="btn-blur-box-preset py-0.5 px-1.5 rounded bg-slate-800 text-slate-300 hover:text-white" data-preset="bottom">បាំង Subtitle ក្រោម</button>
+                          <button type="button" class="btn-blur-box-preset py-0.5 px-1.5 rounded bg-slate-800 text-slate-300 hover:text-white" data-preset="face">បាំងមុខ (Face)</button>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 3. Logo Overlay (Watermark) -->
+                  <div class="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-indigo-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                          <circle cx="8.5" cy="8.5" r="1.5"/>
+                          <polyline points="21 15 16 10 5 21"/>
+                        </svg>
+                        <span>ដាក់ Logo លើ Video (Watermark)</span>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="chk-enable-logo" />
+                        <span class="slider-toggle"></span>
+                      </label>
+                    </div>
+
+                    <div id="logo-settings-controls" class="space-y-2 hidden">
+                      <input type="file" id="logo-file-input" accept="image/*" class="hidden" />
+                      <div class="flex items-center gap-2">
+                        <button type="button" id="btn-upload-logo" class="btn btn-xs btn-indigo">
+                          <svg class="w-3 h-3 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                            <polyline points="17 8 12 3 7 8"/>
+                            <line x1="12" y1="3" x2="12" y2="15"/>
+                          </svg>
+                          <span>ជ្រើសរើសរូប Logo</span>
+                        </button>
+                        <button type="button" id="btn-remove-logo" class="btn btn-xs btn-secondary hidden text-rose-400 hover:text-rose-300">លុប Logo</button>
+                        <div id="logo-preview-badge" class="hidden flex items-center gap-1.5 ml-auto">
+                          <img id="logo-mini-thumb" class="w-6 h-6 rounded object-contain bg-slate-900 border border-slate-700" alt="Thumb" />
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label class="text-[11px] text-slate-400 block mb-1">ទីតាំង Logo</label>
+                          <select id="select-logo-pos" class="form-select text-xs py-1">
+                            <option value="top-right" selected>លើ-ស្តាំ (Top Right)</option>
+                            <option value="top-left">លើ-ឆ្វេង (Top Left)</option>
+                            <option value="bottom-right">ក្រោម-ស្តាំ (Bottom Right)</option>
+                            <option value="bottom-left">ក្រោម-ឆ្វេង (Bottom Left)</option>
+                          </select>
+                        </div>
+                        <div>
+                          <div class="flex justify-between items-center mb-1">
+                            <label class="text-[11px] text-slate-400">ទំហំ Logo</label>
+                            <span id="logo-size-val" class="text-[10px] font-mono text-cyan-300">14%</span>
+                          </div>
+                          <input type="range" id="slider-logo-size" min="5" max="30" value="14" step="1" class="slider" />
+                        </div>
+                      </div>
+
+                      <div>
+                        <div class="flex justify-between items-center mb-1">
+                          <label class="text-[11px] text-slate-400">កម្រិតច្បាស់ (Opacity)</label>
+                          <span id="logo-opacity-val" class="text-[10px] font-mono text-cyan-300">85%</span>
+                        </div>
+                        <input type="range" id="slider-logo-opacity" min="20" max="100" value="85" step="5" class="slider" />
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- 4. Running Marquee Banner Text -->
+                  <div class="p-2 rounded-lg bg-slate-800/60 border border-slate-700/60 space-y-2">
+                    <div class="flex items-center justify-between">
+                      <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                          <path d="M4 12h16M14 6l6 6-6 6"/>
+                        </svg>
+                        <span>ដាក់អក្សររត់លើ Video (Running Text)</span>
+                      </div>
+                      <label class="switch">
+                        <input type="checkbox" id="chk-enable-marquee" />
+                        <span class="slider-toggle"></span>
+                      </label>
+                    </div>
+
+                    <div id="marquee-settings-controls" class="space-y-2.5 hidden">
+                      <div>
+                        <label class="text-[11px] text-slate-400 block mb-1">អត្ថបទរត់ (Marquee Text)</label>
+                        <input type="text" id="input-marquee-text" placeholder="ឧ. Nha DX Dubber Pro • ទំនាក់ទំនង: 012 345 678" class="form-input text-xs w-full py-1.5" />
+                      </div>
+
+                      <!-- Remove Black Box Toggle -->
+                      <div class="flex items-center justify-between p-2 rounded-lg bg-slate-900/70 border border-slate-700/60">
+                        <div class="flex flex-col">
+                          <span class="text-[11px] font-medium text-slate-200">បង្ហាញផ្ទៃខ្មៅ (Black Box Background)</span>
+                          <span class="text-[10px] text-slate-400">ដកដើម្បីអោយអក្សរអណ្តែតលើ Video ដោយគ្មានប្រអប់ខ្មៅ</span>
+                        </div>
+                        <label class="switch">
+                          <input type="checkbox" id="chk-marquee-bg" checked />
+                          <span class="slider-toggle"></span>
+                        </label>
+                      </div>
+
+                      <!-- Draggable Position Y with presets -->
+                      <div class="space-y-1.5 p-2 rounded-lg bg-slate-900/70 border border-slate-700/60">
+                        <div class="flex justify-between items-center">
+                          <label class="text-[11px] font-medium text-slate-300 flex items-center gap-1">
+                            <span>↕ ទីតាំងលើ-ក្រោម (Position Y)</span>
+                            <span class="text-[9px] text-indigo-400 font-normal">(អាចអូសលើ Video)</span>
+                          </label>
+                          <span id="marquee-y-val" class="text-[10px] font-mono text-cyan-300">90%</span>
+                        </div>
+                        <input type="range" id="slider-marquee-y" min="0" max="95" value="90" step="1" class="slider" />
+                        <div class="flex items-center justify-between gap-1 pt-0.5">
+                          <button type="button" class="btn-marquee-pos-preset flex-1 py-1 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all text-center" data-y="2">លើ (Top 2%)</button>
+                          <button type="button" class="btn-marquee-pos-preset flex-1 py-1 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all text-center" data-y="48">កណ្តាល (Center)</button>
+                          <button type="button" class="btn-marquee-pos-preset active flex-1 py-1 text-[10px] rounded bg-indigo-600 text-white border border-indigo-500 hover:bg-indigo-500 active:scale-95 transition-all text-center" data-y="90">ក្រោម (Bottom 90%)</button>
+                        </div>
+                      </div>
+
+                      <!-- Resizable Font Size Scale with presets -->
+                      <div class="space-y-1.5 p-2 rounded-lg bg-slate-900/70 border border-slate-700/60">
+                        <div class="flex justify-between items-center">
+                          <label class="text-[11px] font-medium text-slate-300">🔍 ទំហំអក្សរ (Font Size)</label>
+                          <span id="marquee-size-val" class="text-[10px] font-mono text-cyan-300">100%</span>
+                        </div>
+                        <input type="range" id="slider-marquee-size" min="60" max="180" value="100" step="5" class="slider" />
+                        <div class="flex items-center justify-between gap-1 pt-0.5">
+                          <button type="button" class="btn-marquee-size-preset flex-1 py-1 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all text-center" data-size="75">តូច (75%)</button>
+                          <button type="button" class="btn-marquee-size-preset active flex-1 py-1 text-[10px] rounded bg-indigo-600 text-white border border-indigo-500 hover:bg-indigo-500 active:scale-95 transition-all text-center" data-size="100">ធម្មតា (100%)</button>
+                          <button type="button" class="btn-marquee-size-preset flex-1 py-1 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all text-center" data-size="130">ធំ (130%)</button>
+                          <button type="button" class="btn-marquee-size-preset flex-1 py-1 text-[10px] rounded bg-slate-800 text-slate-300 border border-slate-700 hover:bg-slate-700 active:scale-95 transition-all text-center" data-size="160">ធំខ្លាំង (160%)</button>
+                        </div>
+                      </div>
+
+                      <div class="grid grid-cols-2 gap-2 text-xs">
+                        <div>
+                          <label class="text-[11px] text-slate-400 block mb-1">ល្បឿនរត់ (Speed)</label>
+                          <select id="select-marquee-speed" class="form-select text-xs py-1">
+                            <option value="1">យឺត (Slow)</option>
+                            <option value="2" selected>មធ្យម (Normal)</option>
+                            <option value="3">លឿន (Fast)</option>
+                            <option value="4">លឿនខ្លាំង (Turbo)</option>
+                          </select>
+                        </div>
+                        <div class="flex flex-col justify-end">
+                          <label class="text-[11px] text-slate-400 mb-1">ពណ៌អក្សរ (Color)</label>
+                          <div class="flex items-center gap-1.5 h-[34px]">
+                            <input type="color" id="input-marquee-color" value="#FACC15" class="w-6 h-6 rounded cursor-pointer border border-slate-700 bg-transparent p-0" />
+                            <span id="marquee-color-code" class="text-[10px] font-mono text-amber-300">#FACC15</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="pt-0.5">
+                        <div class="flex justify-between items-center mb-1">
+                          <label class="text-[11px] text-slate-400">កម្រិតច្បាស់ (Opacity)</label>
+                          <span id="marquee-opacity-val" class="text-[10px] font-mono text-cyan-300">85%</span>
+                        </div>
+                        <input type="range" id="slider-marquee-opacity" min="10" max="100" value="85" step="5" class="slider" />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Right: Dubbing & Audio Settings Card -->
+            <div class="dubbing-controls-card" id="section-dubbing">
+              <div class="card-header">
+                <div class="flex items-center gap-2">
+                  <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/></svg>
+                  <h4 class="text-sm font-semibold text-white">ការកំណត់សំឡេង Dubbing</h4>
+                </div>
+                <!-- Dynamic Audio Waves Visualizer -->
+                <div class="audio-wave-anim">
+                  <span></span><span></span><span></span><span></span><span></span>
+                </div>
+              </div>
+
+              <div class="settings-grid">
+                <!-- Auto Gender Speaker Detection -->
+                <div class="p-2.5 rounded-lg bg-indigo-500/10 border border-indigo-500/25 flex items-center justify-between">
+                  <div>
+                    <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                      <span>👥 ចាប់សំឡេងប្រុស/ស្រីស្វ័យប្រវត្តិ (Auto Gender)</span>
+                    </div>
+                    <div class="text-[11px] text-indigo-200/80 mt-0.5">ប្រុសប្រើ Piseth, ស្រីប្រើ Sreymom តាមតួអង្គ</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="chk-auto-gender" checked />
+                    <span class="slider-toggle"></span>
+                  </label>
+                </div>
+
+                <!-- Voice Isolation (Isolate Voice) -->
+                <div class="p-2.5 rounded-lg bg-amber-500/10 border border-amber-500/25 space-y-2">
+                  <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-1.5">
+                      <svg class="w-4 h-4 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="2" y1="2" x2="22" y2="22"/></svg>
+                      <span class="text-xs font-semibold text-white">មុខងារ Isolate Voice (កម្ចាត់សំឡេងដើម)</span>
+                    </div>
+                    <label class="switch">
+                      <input type="checkbox" id="chk-isolate-voice" checked />
+                      <span class="slider-toggle"></span>
+                    </label>
+                  </div>
+                  <div class="text-[11px] text-slate-400">
+                    បិទសំឡេងដើមពេលមាន Dubbing ដើម្បីកុំឱ្យជាន់សំឡេងគ្នា និងរក្សាភ្លេង BGM ដើម
+                  </div>
+                  <div class="flex justify-between items-center text-xs pt-1">
+                    <span class="text-slate-400">កម្រិតកាត់សំឡេងដើម:</span>
+                    <span id="isolation-strength-val" class="font-mono text-amber-400">100% (បិទសំឡេងដើមទាំងស្រុង)</span>
+                  </div>
+                  <input type="range" id="isolation-strength-slider" min="0" max="100" value="100" step="10" class="slider" />
+                </div>
+
+                <!-- Fallback / Default Khmer Voice Choice -->
+                <div class="form-group" id="group-default-voice">
+                  <label class="form-label">សំឡេងនិយាយចម្បង (Default Voice)</label>
+                  <select id="tts-voice-select" class="form-select">
+                    <option value="km-KH-PisethNeural" selected>សំឡេងប្រុស (Piseth Neural - ពិទិដ្ឋ)</option>
+                    <option value="km-KH-SreymomNeural">សំឡេងស្រី (Sreymom Neural - ស្រីមុំ)</option>
+                  </select>
+                </div>
+
+                <!-- Speech Rate -->
+                <div class="form-group">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="form-label mb-0">ល្បឿននិយាយ (Speech Rate)</label>
+                    <span id="rate-val" class="text-xs font-mono text-indigo-400">0%</span>
+                  </div>
+                  <input type="range" id="tts-rate-slider" min="-30" max="30" value="0" step="5" class="slider" />
+                  <div class="flex items-center gap-1 pt-1 flex-wrap">
+                    <button type="button" class="btn-rate-preset py-0.5 px-2 rounded bg-slate-800 text-[10px] text-slate-300 hover:text-white border border-slate-700/60 transition active:scale-95" data-rate="-15">យឺត (-15%)</button>
+                    <button type="button" class="btn-rate-preset active py-0.5 px-2 rounded bg-indigo-600 text-[10px] text-white border border-indigo-500 transition active:scale-95" data-rate="0">ធម្មតា (0%)</button>
+                    <button type="button" class="btn-rate-preset py-0.5 px-2 rounded bg-slate-800 text-[10px] text-slate-300 hover:text-white border border-slate-700/60 transition active:scale-95" data-rate="15">រហ័ស (+15%)</button>
+                    <button type="button" class="btn-rate-preset py-0.5 px-2 rounded bg-slate-800 text-[10px] text-slate-300 hover:text-white border border-slate-700/60 transition active:scale-95" data-rate="25">លឿន (+25%)</button>
+                  </div>
+                </div>
+
+                <!-- Original Video Audio Volume (BGM ducking) -->
+                <div class="form-group">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="form-label mb-0">សំឡេង Video ដើម (BGM Ducking)</label>
+                    <span id="bgm-volume-val" class="text-xs font-mono text-emerald-400">15%</span>
+                  </div>
+                  <input type="range" id="bgm-volume-slider" min="0" max="100" value="15" step="5" class="slider" />
+                </div>
+
+                <!-- Dubbed TTS Audio Volume -->
+                <div class="form-group">
+                  <div class="flex justify-between items-center mb-1">
+                    <label class="form-label mb-0">កម្រិតសំឡេង Dubbing (TTS Volume)</label>
+                    <span id="dub-volume-val" class="text-xs font-mono text-amber-400">100%</span>
+                  </div>
+                  <input type="range" id="dub-volume-slider" min="50" max="150" value="100" step="5" class="slider" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Bottom: Subtitle & Dubbing Segments Editor -->
+          <div class="subtitles-section" id="section-subtitles">
+            <div class="subtitles-header">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="text-base">📝</span>
+                <h4 class="text-sm font-semibold text-white">កែសម្រួលអត្ថបទបកប្រែខ្មែរ & Timestamps (<span id="segments-count">0</span>)</h4>
+                <!-- Search Subtitle Input -->
+                <div class="subtitles-search-box flex items-center bg-slate-900/90 border border-slate-700/60 rounded-lg px-2 py-0.5 gap-1.5 focus-within:border-indigo-500 transition">
+                  <svg class="w-3.5 h-3.5 text-slate-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+                  <input type="text" id="subtitles-search-input" placeholder="ស្វែងរកអត្ថបទ..." class="bg-transparent border-none outline-none text-xs text-white placeholder-slate-500 w-24 sm:w-36 py-0.5" />
+                </div>
+              </div>
+
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <!-- Import SRT File Input & Button -->
+                <input type="file" id="srt-file-input" accept=".srt,text/plain" class="hidden" />
+                <button id="btn-import-srt" class="btn btn-xs btn-indigo" title="Import ឯកសារ SRT ពីទូរស័ព្ទ (មិនបាច់ Transcribe)">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="17 8 12 3 7 8"/>
+                    <line x1="12" y1="3" x2="12" y2="15"/>
+                  </svg>
+                  <span>📥 Import SRT</span>
+                </button>
+                <button id="btn-paste-raw-text" class="btn btn-xs btn-blue" title="បិទភ្ជាប់អត្ថបទ Raw Text ឬ SRT">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/>
+                    <rect x="8" y="2" width="8" height="4" rx="1" ry="1"/>
+                  </svg>
+                  <span>📋 Paste Text / SRT</span>
+                </button>
+                <button id="btn-export-srt" class="btn btn-xs btn-emerald hidden" title="Export ឯកសារ SRT">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>Export SRT</span>
+                </button>
+                <button id="btn-share-srt" class="btn btn-xs btn-secondary hidden" title="ចែករំលែកឯកសារ SRT">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+                  </svg>
+                  <span>Share SRT</span>
+                </button>
+                <button id="btn-export-from-subs" class="btn btn-xs btn-emerald hidden shadow-sm shadow-emerald-500/20 font-semibold" title="Download Video ជាមួយ Subtitle & Dubbing">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                    <polyline points="7 10 12 15 17 10"/>
+                    <line x1="12" y1="15" x2="12" y2="3"/>
+                  </svg>
+                  <span>📥 Download Video</span>
+                </button>
+                <button id="btn-add-segment" class="btn btn-xs btn-secondary">+ បន្ថែមចំណុចថ្មី</button>
+                <button id="btn-preview-dubbing" class="btn btn-xs btn-amber">
+                  <svg class="w-3.5 h-3.5 mr-1" width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <span>ស្តាប់សំឡេង Dubbing</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Subtitle Styling Bar (Color, Khmer Font Style, Box Background, Size) -->
+            <div class="sub-styling-panel p-2.5 rounded-xl bg-slate-900/90 border border-slate-800 shadow-md space-y-2 mb-2" id="sub-styling-panel">
+              <div class="flex items-center justify-between cursor-pointer select-none" id="btn-toggle-sub-style">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="text-sm">🎨</span>
+                  <h5 class="text-xs font-semibold text-white">កែម៉ូត & ពណ៌អក្សរ Subtitle (Subtitle Style & Colors)</h5>
+                  <span id="sub-style-status-badge" class="text-[10px] text-cyan-300 font-mono">Kantumruy Pro</span>
+                </div>
+                <div class="flex items-center gap-1.5">
+                  <button type="button" id="btn-apply-sub-style-all" class="btn btn-xs btn-purple py-0.5 px-2 text-[10px] font-semibold shadow-sm" title="អនុវត្ត Style Subtitle លើ Video ទាំងអស់ក្នុងបញ្ជី">
+                    <span>✨ ដាក់លើ Video ទាំងអស់</span>
+                  </button>
+                  <span id="sub-style-toggle-icon" class="text-xs text-slate-400 transition-transform duration-200">▼</span>
+                </div>
+              </div>
+
+              <div id="sub-style-body" class="space-y-2 pt-1 text-xs">
+                <!-- Live Sample Pill -->
+                <div class="p-2 rounded-lg bg-black/70 border border-slate-800 flex items-center justify-center overflow-hidden">
+                  <span id="sub-style-sample-pill" class="sub-sample-text">សួស្តី! នេះជាគំរូអត្ថបទ Subtitle ខ្មែរ (Preview)</span>
+                </div>
+
+                <!-- Controls Row 1: Text Color & Khmer Font Family -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <label class="text-[11px] text-slate-400">ពណ៌អក្សរ (Text Color)</label>
+                      <span id="sub-color-hex" class="text-[10px] font-mono text-cyan-300">#FFFFFF</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <input type="color" id="sub-text-color-picker" value="#ffffff" class="w-7 h-7 rounded cursor-pointer border border-slate-700 bg-transparent p-0" />
+                      <div class="flex gap-1">
+                        <button type="button" class="btn-sub-color-preset w-5 h-5 rounded-full bg-white border border-slate-600" data-color="#ffffff" title="ស"></button>
+                        <button type="button" class="btn-sub-color-preset w-5 h-5 rounded-full bg-yellow-400 border border-slate-600" data-color="#facc15" title="លឿង"></button>
+                        <button type="button" class="btn-sub-color-preset w-5 h-5 rounded-full bg-emerald-400 border border-slate-600" data-color="#34d399" title="បៃតង"></button>
+                        <button type="button" class="btn-sub-color-preset w-5 h-5 rounded-full bg-sky-400 border border-slate-600" data-color="#38bdf8" title="ផ្ទៃមេឃ"></button>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div>
+                    <label class="text-[11px] text-slate-400 block mb-1">ពុម្ពអក្សរ (Khmer Font)</label>
+                    <select id="sub-font-family-select" class="form-select text-xs py-1">
+                      <option value="'Kantumruy Pro', sans-serif" selected>Kantumruy Pro (ទំនើប)</option>
+                      <option value="'Battambang', cursive">Battambang (ដិតស្អាត)</option>
+                      <option value="'Hanuman', serif">Hanuman (បែបបុរាណ)</option>
+                      <option value="'Moul', cursive">Moul (ក្បាច់មួល)</option>
+                      <option value="'Siemreap', cursive">Siemreap (សៀមរាប)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Controls Row 2: Font Size & Font Weight -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <label class="text-[11px] text-slate-400 block mb-1">ទំហំអក្សរ (Size)</label>
+                    <select id="sub-font-size-select" class="form-select text-xs py-1">
+                      <option value="85">តូច (Small - 85%)</option>
+                      <option value="100" selected>មធ្យម (Normal - 100%)</option>
+                      <option value="120">ធំ (Large - 120%)</option>
+                      <option value="140">ធំខ្លាំង (Extra Large - 140%)</option>
+                    </select>
+                  </div>
+                  <div>
+                    <label class="text-[11px] text-slate-400 block mb-1">កម្រាស់អក្សរ (Weight)</label>
+                    <select id="sub-font-weight-select" class="form-select text-xs py-1">
+                      <option value="500">Regular (ធម្មតា)</option>
+                      <option value="600" selected>Bold (ដិតច្បាស់)</option>
+                      <option value="800">Black (ដិតខ្លាំង)</option>
+                    </select>
+                  </div>
+                </div>
+
+                <!-- Controls Row 3: Box Background Color & Background Opacity -->
+                <div class="grid grid-cols-2 gap-2">
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <label class="text-[11px] text-slate-400">ពណ៌ផ្ទៃប្រអប់ (Box Bg)</label>
+                      <span id="sub-bgcolor-hex" class="text-[10px] font-mono text-slate-300">#000000</span>
+                    </div>
+                    <div class="flex items-center gap-1.5">
+                      <input type="color" id="sub-bg-color-picker" value="#000000" class="w-7 h-7 rounded cursor-pointer border border-slate-700 bg-transparent p-0" />
+                      <button type="button" id="btn-sub-bg-clear" class="btn btn-xs py-0.5 px-2 text-[10px] bg-slate-800 text-slate-400 hover:text-white" title="គ្មានផ្ទៃ">គ្មានផ្ទៃ</button>
+                    </div>
+                  </div>
+                  <div>
+                    <div class="flex justify-between items-center mb-1">
+                      <label class="text-[11px] text-slate-400">កម្រិតច្បាស់ផ្ទៃ (Bg Opacity)</label>
+                      <span id="sub-bg-opacity-val" class="text-[10px] font-mono text-cyan-300">80%</span>
+                    </div>
+                    <input type="range" id="sub-bg-opacity-slider" min="0" max="100" value="80" step="5" class="slider" />
+                  </div>
+                </div>
+
+                <!-- Controls Row 4: Outline / Stroke -->
+                <div class="flex items-center justify-between p-2 rounded-lg bg-slate-800/40 border border-slate-700/50">
+                  <div>
+                    <span class="text-xs font-semibold text-white">គែមអក្សរខ្មៅដិត (Outline Stroke)</span>
+                    <div class="text-[10px] text-slate-400">ជួយឱ្យអក្សរលេចធ្លោលើគ្រប់ប្លង់វីដេអូ</div>
+                  </div>
+                  <label class="switch">
+                    <input type="checkbox" id="chk-sub-stroke" checked />
+                    <span class="slider-toggle"></span>
+                  </label>
+                </div>
+              </div>
+            </div>
+
+            <!-- List of Segments -->
+            <div id="subtitles-list" class="subtitles-list custom-scroll">
+              <div class="empty-state py-8">
+                <p class="text-slate-400 text-sm">មិនទាន់មានអត្ថបទ Transcribe នៅឡើយទេ។</p>
+                <p class="text-slate-500 text-xs mt-1">សូមចុចប៊ូតុង "Transcribe (Gemini)" ខាងលើដើម្បីដំណើរការ</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- SRT Export Modal -->
+    <div id="srt-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                <polyline points="14 2 14 8 20 8"/>
+                <line x1="12" y1="18" x2="12" y2="12"/>
+                <polyline points="9 15 12 18 15 15"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">Export ឯកសារ SRT</h3>
+              <p class="text-xs text-slate-400">រក្សាទុកឯកសារ Subtitle ខ្មែរ (.srt) សម្រាប់ប្រើប្រាស់ពេលក្រោយ</p>
+            </div>
+          </div>
+          <button id="btn-close-srt-modal" class="text-slate-400 hover:text-white transition">✕</button>
+        </div>
+
+        <div class="modal-body space-y-4">
+          <!-- SRT File Info Box -->
+          <div class="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800 space-y-2">
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">ឈ្មោះឯកសារ:</span>
+              <span id="srt-modal-filename" class="font-mono text-cyan-300 font-semibold truncate max-w-[220px]">video_Khmer.srt</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">ចំនួន Subtitles:</span>
+              <span id="srt-modal-count" class="font-semibold text-emerald-400">0 ចំណុច</span>
+            </div>
+            <div class="flex justify-between items-center text-xs">
+              <span class="text-slate-400">ទម្រង់អក្សរ (Encoding):</span>
+              <span class="text-slate-300 font-mono">UTF-8 (គាំទ្រអក្សរខ្មែរ ១០០%)</span>
+            </div>
+          </div>
+
+          <!-- Preview Area -->
+          <div class="space-y-1.5">
+            <div class="flex justify-between items-center text-xs text-slate-400">
+              <span>មើលគំរូអត្ថបទ SRT (Preview):</span>
+              <button type="button" id="btn-copy-srt-text" class="text-cyan-400 hover:text-cyan-300 font-medium">📋 Copy អត្ថបទ</button>
+            </div>
+            <pre id="srt-modal-preview" class="p-3 rounded-lg bg-slate-950 border border-slate-800/80 font-mono text-[11px] text-slate-300 max-h-36 overflow-y-auto custom-scroll whitespace-pre-wrap select-all"></pre>
+          </div>
+
+          <!-- Status / Saved alert (shown after saving) -->
+          <div id="srt-save-status" class="hidden p-3 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-xs text-emerald-300 flex items-start gap-2">
+            <svg class="w-4 h-4 shrink-0 text-emerald-400 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="srt-save-status-text">បានរក្សាទុកឯកសារ SRT ដោយជោគជ័យ!</span>
+          </div>
+        </div>
+
+        <div class="modal-footer flex flex-wrap gap-2 justify-end">
+          <button id="btn-share-srt-modal" class="btn btn-secondary text-xs">
+            <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+            </svg>
+            <span>ចែករំលែក (Share)</span>
+          </button>
+          <button id="btn-save-srt-modal" class="btn btn-emerald text-xs">
+            <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>💾 រក្សាទុកក្នុង Download</span>
+          </button>
+          <button id="btn-goto-export-modal" class="btn btn-primary text-xs shadow-md shadow-indigo-500/20 font-semibold" title="ទៅកាន់ការ Download Video">
+            <svg class="w-3.5 h-3.5 mr-1" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+            <span>📥 Download Video ឥឡូវនេះ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Raw Text or SRT Paste Modal -->
+    <div id="raw-text-modal" class="modal-backdrop hidden">
+      <div class="modal-card max-w-xl">
+        <div class="modal-header">
+          <div class="flex items-center gap-2">
+            <span class="text-base sm:text-lg">📋</span>
+            <h3 class="font-bold text-white text-sm sm:text-base">បិទភ្ជាប់អត្ថបទ Raw Text ឬ SRT</h3>
+          </div>
+          <button id="btn-close-raw-text-modal" class="text-slate-400 hover:text-white transition p-1 text-base">✕</button>
+        </div>
+
+        <div class="modal-body space-y-3">
+          <p class="text-xs sm:text-sm text-slate-300 leading-relaxed">
+            លោកអ្នកអាចបិទភ្ជាប់ (Paste) អត្ថបទជាបន្ទាត់ៗ ឬជាទ្រង់ទ្រាយ SRT។ ប្រព័ន្ធនឹងគណនាពេលវេលាអានដោយស្វ័យប្រវត្តិ។
+          </p>
+
+          <textarea id="input-raw-text" rows="9" class="w-full bg-slate-900/90 border border-slate-700/80 rounded-xl p-3.5 text-xs sm:text-sm text-white placeholder-slate-500 font-khmer focus:outline-none focus:border-indigo-500 transition resize-y font-mono leading-relaxed" placeholder="ឧទាហរណ៍៖&#10;[សំឡេងអ្នកសម្រាយរឿង]: កាលពីព្រេងនាយ...&#10;[សំឡេងប្រុស]: ខ្ញុំមិនដែលគិតថានឹងកើតឡើងឡើយ។&#10;[សំឡេងស្រី]: តើយើងគួរធ្វើយ៉ាងណាទៅ?"></textarea>
+
+          <div class="flex items-center justify-between text-[11px] text-slate-400">
+            <span id="raw-text-stats">0 បន្ទាត់ | 0 តួអក្សរ</span>
+            <button type="button" id="btn-clear-raw-text" class="text-slate-400 hover:text-rose-400 transition font-medium">សម្អាត (Clear)</button>
+          </div>
+        </div>
+
+        <div class="modal-footer flex items-center justify-end gap-2.5">
+          <button type="button" id="btn-cancel-raw-text" class="btn btn-secondary px-5 py-2 text-xs sm:text-sm font-medium">បោះបង់</button>
+          <button type="button" id="btn-confirm-raw-text" class="btn btn-blue px-5 py-2 text-xs sm:text-sm font-semibold shadow-lg shadow-sky-500/25">យល់ព្រម បញ្ចូល</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Export Modal & Progress Overlay -->
+    <div id="export-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">Export Video</h3>
+              <p class="text-xs text-slate-400">បញ្ចូលសំឡេង Dubbing ខ្មែរ និងអក្សររត់ទៅក្នុង Video</p>
+            </div>
+          </div>
+          <button id="btn-close-export-modal" class="text-slate-400 hover:text-white transition">✕</button>
+        </div>
+
+        <div class="modal-body space-y-4">
+          <!-- Subtitle Burn-in Option -->
+          <div class="flex items-center justify-between p-3.5 rounded-xl bg-slate-900/60 border border-slate-800">
+            <div>
+              <div class="text-sm font-medium text-white">ដាក់បញ្ចូលអក្សររត់ខ្មែរ (Burn-in Subtitles)</div>
+              <div class="text-xs text-slate-400">បង្ហាញអក្សរខ្មែរជាប់នៅលើផ្ទៃ Video តែម្តង</div>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="chk-burn-subtitles" checked />
+              <span class="slider-toggle"></span>
+            </label>
+          </div>
+
+          <!-- Video Audio Boost (+30% Volume Boost) -->
+          <div class="flex items-center justify-between p-3 rounded-xl bg-amber-500/10 border border-amber-500/25">
+            <div>
+              <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                <svg class="w-3.5 h-3.5 text-amber-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/>
+                  <path d="M19.07 4.93a10 10 0 0 1 0 14.14M15.54 8.46a5 5 0 0 1 0 7.07"/>
+                </svg>
+                <span>សំឡេងវីដេអូ Boost +30% (លឺខ្លាំង & ច្បាស់ល្អ)</span>
+              </div>
+              <div class="text-[11px] text-amber-200/80 mt-0.5">បង្កើនកម្រិតសំឡេងរួម +30% ពេល Render ចេញឱ្យលឺខ្លាំង និងបំពាក់ Studio Limiter ការពារការបែកសំឡេង</div>
+            </div>
+            <span class="text-xs font-bold text-amber-300 bg-amber-500/20 px-2 py-0.5 rounded-full border border-amber-500/40 font-mono">+30% Boost</span>
+          </div>
+
+          <!-- Video Quality / Format -->
+          <div class="form-group">
+            <label class="form-label">ទម្រង់វីដេអូ Export (Format)</label>
+            <select id="export-format-select" class="form-select">
+              <option value="video/mp4" selected>MP4 / H.264 (ណែនាំ - ពេញនាទី 100% លើ Android Gallery & Photos)</option>
+              <option value="video/webm">WebM / VP8 (HD Video)</option>
+              <option value="video/quicktime">MOV (Apple QuickTime / HD Video)</option>
+            </select>
+            <p class="text-[11px] text-slate-400 mt-1">💡 វីដេអូត្រូវបាន Remux និងកែសម្រួល Duration Header ពេញលេញគ្រប់វិនាទី និងចាក់បាន 100% ក្នុង Gallery, Photos, VLC និង Player ទាំងអស់។</p>
+          </div>
+
+          <!-- Progress Bar Area (active during export) -->
+          <div id="export-progress-container" class="space-y-2 hidden">
+            <div class="flex justify-between text-xs font-medium">
+              <span id="export-status-label" class="text-indigo-400">កំពុង Rendering & Exporting...</span>
+              <span id="export-percent" class="text-emerald-400 font-mono">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="export-progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Export Result (Gallery status, Inline Player, Open, Share & Download buttons) -->
+          <div id="export-result-container" class="hidden p-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-center space-y-3">
+            <div class="text-emerald-400 text-sm font-semibold flex items-center justify-center gap-1.5">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>Export បានជោគជ័យ ១០០%!</span>
+            </div>
+            
+            <div id="export-gallery-status" class="text-xs text-emerald-300 font-medium bg-emerald-500/20 py-2 px-3 rounded-lg border border-emerald-500/40 text-left flex items-start gap-2.5">
+              <svg class="w-4 h-4 text-emerald-400 shrink-0 mt-0.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+              <div>
+                <div class="font-semibold text-white">បានរក្សាទុកក្នុង Gallery / Photos</div>
+                <div class="text-[11px] text-emerald-200/80">ទីតាំង: ថត Movies &gt; NhaDXDubberPro</div>
+              </div>
+            </div>
+
+            <!-- In-App Direct Video Player Preview (Compact, easy to view) -->
+            <div class="rounded-xl overflow-hidden border border-slate-700/80 bg-black/90 max-w-[260px] max-h-40 w-full flex items-center justify-center mx-auto relative shadow-inner aspect-video">
+              <video id="export-preview-video" controls playsinline webkit-playsinline class="w-full max-h-40 object-contain"></video>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+              <button type="button" id="btn-open-video" class="btn btn-primary w-full justify-center py-2.5 shadow-lg shadow-indigo-500/20">
+                <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                <span>បើកមើលវីដេអូ</span>
+              </button>
+              <button type="button" id="btn-share-video" class="btn btn-amber w-full justify-center py-2.5 shadow-lg shadow-amber-500/20">
+                <svg class="w-4 h-4 mr-2" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                <span>ចែករំលែក Video</span>
+              </button>
+            </div>
+
+            <a id="btn-download-video" class="btn btn-secondary w-full justify-center py-2 text-xs text-slate-300 hover:text-white" download="dubbed_video.mp4">
+              <svg class="w-3.5 h-3.5 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>ទាញយក File Video (Direct File Download)</span>
+            </a>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button id="btn-start-export" class="btn btn-primary w-full justify-center py-2.5 font-bold shadow-lg shadow-indigo-500/25">
+            <span>📥 ចាប់ផ្តើម Export & Download Video ឥឡូវនេះ</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Batch Render & Merge Video Modal -->
+    <div id="batch-merge-modal" class="modal-backdrop hidden">
+      <div class="modal-card max-w-xl">
+        <div class="modal-header">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-purple-500/20 text-purple-400 flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/>
+              </svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">⚡ Batch Render & 🎬 Merge Video</h3>
+              <p class="text-xs text-slate-400">Render វីដេអូនីមួយៗ ឬផ្គុំវីដេអូទាំងអស់បញ្ចូលគ្នាទៅជា 1 File ពេញលេញ</p>
+            </div>
+          </div>
+          <button id="btn-close-batch-modal" class="text-slate-400 hover:text-white transition">✕</button>
+        </div>
+
+        <div class="modal-body space-y-3.5 max-h-[70vh] overflow-y-auto custom-scroll">
+          <!-- Summary Banner -->
+          <div class="p-3 rounded-xl bg-slate-900/80 border border-slate-800 flex items-center justify-between flex-wrap gap-2">
+            <div>
+              <div class="text-xs font-semibold text-white flex items-center gap-1.5">
+                <span>📁 បញ្ជីវីដេអូសរុប៖</span>
+                <span id="batch-modal-total-count" class="font-mono text-cyan-300">0 វីដេអូ</span>
+              </div>
+              <div class="text-[11px] text-slate-400 mt-0.5">
+                <span>រយៈពេលរួមប្រមាណ៖ </span>
+                <span id="batch-modal-total-duration" class="font-mono text-emerald-400">00:00</span>
+              </div>
+            </div>
+            <div class="flex items-center gap-1.5">
+              <button type="button" id="btn-modal-batch-render" class="btn btn-xs btn-emerald shadow-sm font-semibold">
+                <span>⚡ Batch Render</span>
+              </button>
+              <button type="button" id="btn-modal-batch-merge" class="btn btn-xs btn-purple shadow-sm font-semibold">
+                <span>🎬 Merge Video</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Video Queue Items List in Modal -->
+          <div class="space-y-1.5">
+            <div class="flex items-center justify-between">
+              <label class="text-[11px] text-slate-400 block font-medium">វីដេអូនៅក្នុង Batch ៖</label>
+              <span class="text-[10px] text-slate-500">តាមលំដាប់លំដោយក្នុង Queue</span>
+            </div>
+            <div id="batch-modal-video-list" class="space-y-1.5 max-h-48 overflow-y-auto custom-scroll p-1 rounded-lg bg-slate-900/40 border border-slate-800/60">
+              <!-- Dynamically populated items -->
+            </div>
+          </div>
+
+          <!-- Progress Bar Area -->
+          <div id="batch-progress-container" class="space-y-2 hidden p-3 rounded-xl bg-slate-900/80 border border-slate-800">
+            <div class="flex justify-between text-xs font-medium">
+              <span id="batch-status-label" class="text-indigo-400">កំពុងដំណើរការ...</span>
+              <span id="batch-percent" class="text-cyan-300 font-mono">0%</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div id="batch-progress-fill" class="progress-bar-fill" style="width: 0%"></div>
+            </div>
+          </div>
+
+          <!-- Merged Result Card -->
+          <div id="merge-result-container" class="hidden p-3.5 rounded-xl bg-purple-500/10 border border-purple-500/30 text-center space-y-3">
+            <div class="text-purple-300 text-sm font-semibold flex items-center justify-center gap-1.5">
+              <svg class="w-5 h-5 text-purple-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+              <span>ផ្គុំវីដេអូបានជោគជ័យ ១០០%!</span>
+            </div>
+
+            <!-- Merged Video Preview Player -->
+            <div class="rounded-xl overflow-hidden border border-slate-700/80 bg-black/90 max-w-[280px] max-h-40 w-full flex items-center justify-center mx-auto relative shadow-inner aspect-video">
+              <video id="merge-preview-video" controls playsinline webkit-playsinline class="w-full max-h-40 object-contain"></video>
+            </div>
+
+            <div class="flex items-center justify-center gap-2 flex-wrap">
+              <a id="btn-download-merged-video" class="btn btn-emerald w-full justify-center py-2.5 font-bold shadow-md shadow-emerald-500/20" download="NhaDX_Merged_All_Videos.mp4">
+                <svg class="w-4 h-4 mr-1.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>📥 Download Merged Video (.MP4)</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer flex items-center justify-between">
+          <button type="button" id="btn-batch-modal-close-footer" class="btn btn-secondary text-xs">បិទ</button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-footer-batch-render" class="btn btn-emerald text-xs font-semibold">⚡ Batch Render</button>
+            <button type="button" id="btn-footer-batch-merge" class="btn btn-purple text-xs font-semibold">🎬 Merge Videos</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Settings Modal (Gemini API & TTS) -->
+    <div id="settings-modal" class="modal-backdrop hidden">
+      <div class="modal-card">
+        <div class="modal-header">
+          <div class="flex items-center gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-indigo-500/20 text-indigo-400 flex items-center justify-center">
+              <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold text-white text-base">ការកំណត់ប្រព័ន្ធ (Settings)</h3>
+              <p class="text-xs text-slate-400">Gemini AI Key & TTS Engine</p>
+            </div>
+          </div>
+          <button id="btn-close-settings" class="text-slate-400 hover:text-white transition">✕</button>
+        </div>
+
+        <div class="modal-body space-y-4">
+          <!-- Gemini API Key -->
+          <div class="form-group">
+            <div class="flex justify-between items-center mb-1">
+              <label class="form-label mb-0">Google Gemini API Key <span class="text-rose-400">*</span></label>
+              <a href="https://aistudio.google.com/app/apikey" target="_blank" class="text-xs text-indigo-400 hover:underline">យក Key ឥតគិតថ្លៃ</a>
+            </div>
+            <div class="relative">
+              <input type="password" id="input-gemini-key" placeholder="AIzaSy..." class="form-input font-mono w-full" />
+              <button type="button" id="btn-toggle-key-visibility" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 hover:text-white text-xs">👁️</button>
+            </div>
+            <div class="text-xs text-slate-500 mt-1">API Key របស់អ្នកត្រូវបានរក្សាទុកតែលើទូរស័ព្ទ/Tablet នេះដោយសុវត្ថិភាព</div>
+          </div>
+
+          <!-- Gemini Model (2.5 up to 3.8) -->
+          <div class="form-group">
+            <div class="flex justify-between items-center mb-1">
+              <label class="form-label mb-0">Gemini Model (2.5 ឡើងទៅ 3.8) <span class="text-rose-400">*</span></label>
+              <button type="button" id="btn-fetch-models" class="text-xs text-indigo-400 hover:underline flex items-center gap-1">
+                <span>🔄 ស្វែងរក Models តាម Key</span>
+              </button>
+            </div>
+            <select id="select-gemini-model" class="form-select">
+              <option value="gemini-3.8-flash" selected>Gemini 3.8 Flash (ជំនាន់ចុងក្រោយ - លឿន & ឆ្លាតវៃបំផុត)</option>
+              <option value="gemini-3.8-pro">Gemini 3.8 Pro (គុណភាពខ្ពស់បំផុត)</option>
+              <option value="gemini-3.5-flash">Gemini 3.5 Flash</option>
+              <option value="gemini-3.5-pro">Gemini 3.5 Pro</option>
+              <option value="gemini-3.1-flash">Gemini 3.1 Flash</option>
+              <option value="gemini-3.0-flash">Gemini 3.0 Flash</option>
+              <option value="gemini-3.0-pro">Gemini 3.0 Pro</option>
+              <option value="gemini-2.5-flash">Gemini 2.5 Flash (ល្បឿនលឿន & បកប្រែខ្មែរបានល្អ)</option>
+              <option value="gemini-2.5-pro">Gemini 2.5 Pro</option>
+              <option value="custom">✏️ បញ្ចូលឈ្មោះ Model ផ្សេងទៀត...</option>
+            </select>
+            <input type="text" id="input-custom-model" placeholder="ឧទាហរណ៍: gemini-3.8-flash" class="form-input font-mono mt-2 hidden" />
+            <div id="fetch-models-status" class="text-xs text-emerald-400 mt-1 hidden"></div>
+          </div>
+
+          <!-- Azure Speech (Optional) -->
+          <div class="form-group pt-2 border-t border-slate-800">
+            <label class="form-label">Microsoft Azure Speech Key (ជម្រើសបន្ថែម)</label>
+            <input type="password" id="input-azure-key" placeholder="ទុកទំនេរសម្រាប់ Edge TTS ធម្មតា" class="form-input font-mono" />
+            <div class="text-xs text-slate-500 mt-1">បើទុកទំនេរ កម្មវិធីនឹងប្រើប្រាស់ Microsoft Edge Neural TTS ដោយឥតគិតថ្លៃ</div>
+          </div>
+
+          <!-- Appearance & App Theme Settings -->
+          <div class="form-group pt-3 border-t border-slate-800 space-y-3" id="section-appearance-settings">
+            <div class="flex items-center justify-between">
+              <label class="form-label mb-0 text-white font-semibold flex items-center gap-1.5">
+                <span>🎨 រូបរាង & ពណ៌កម្មវិធី (Appearance & Theme)</span>
+              </label>
+              <button type="button" id="btn-reset-appearance" class="text-[11px] text-slate-400 hover:text-indigo-300 transition">
+                🔄 លំនាំដើម (Reset)
+              </button>
+            </div>
+            
+            <!-- 1. Background Theme Style -->
+            <div>
+              <label class="text-[11px] text-slate-400 block mb-1.5 font-medium">រចនាបថផ្ទៃខាងក្រោយ (App Background Style)</label>
+              <div class="grid grid-cols-2 sm:grid-cols-3 gap-1.5 text-xs" id="theme-style-presets">
+                <button type="button" class="btn-theme-style active p-2 rounded-lg border border-indigo-500/50 bg-slate-900/90 text-left flex items-center gap-2 transition hover:border-indigo-400" data-theme-style="midnight">
+                  <span class="w-3.5 h-3.5 rounded-full bg-slate-900 border border-indigo-500 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🌌 Midnight Dark</span>
+                </button>
+                <button type="button" class="btn-theme-style p-2 rounded-lg border border-slate-800 bg-black text-left flex items-center gap-2 transition hover:border-slate-600" data-theme-style="amoled">
+                  <span class="w-3.5 h-3.5 rounded-full bg-black border border-slate-700 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🖤 Pure AMOLED</span>
+                </button>
+                <button type="button" class="btn-theme-style p-2 rounded-lg border border-slate-800 bg-[#07131e] text-left flex items-center gap-2 transition hover:border-blue-500" data-theme-style="navy">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#07131e] border border-blue-500 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🌊 Deep Navy</span>
+                </button>
+                <button type="button" class="btn-theme-style p-2 rounded-lg border border-slate-800 bg-[#0d071e] text-left flex items-center gap-2 transition hover:border-purple-500" data-theme-style="purple">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#0d071e] border border-purple-500 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🔮 Cyber Purple</span>
+                </button>
+                <button type="button" class="btn-theme-style p-2 rounded-lg border border-slate-800 bg-[#061610] text-left flex items-center gap-2 transition hover:border-emerald-500" data-theme-style="emerald">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#061610] border border-emerald-500 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🌲 Emerald Tech</span>
+                </button>
+                <button type="button" class="btn-theme-style p-2 rounded-lg border border-slate-800 bg-[#16080c] text-left flex items-center gap-2 transition hover:border-rose-500" data-theme-style="rose">
+                  <span class="w-3.5 h-3.5 rounded-full bg-[#16080c] border border-rose-500 shrink-0"></span>
+                  <span class="text-[11px] text-white font-medium">🌹 Velvet Rose</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- 2. Accent Color Palette -->
+            <div>
+              <div class="flex items-center justify-between mb-1.5">
+                <label class="text-[11px] text-slate-400 font-medium">ពណ៌ប៊ូតុង & Accent Color គ្រប់កម្មវិធី</label>
+                <div class="flex items-center gap-1.5">
+                  <input type="color" id="input-custom-accent" value="#6366f1" class="w-5 h-5 rounded cursor-pointer border border-slate-700 bg-transparent p-0" title="ជ្រើសរើសពណ៌ផ្ទាល់ខ្លួន" />
+                  <span id="label-accent-color" class="text-[10px] font-mono text-indigo-400">#6366F1</span>
+                </div>
+              </div>
+              <div class="flex items-center gap-2 flex-wrap" id="accent-color-presets">
+                <button type="button" class="btn-accent-color active w-7 h-7 rounded-full flex items-center justify-center border-2 border-white shadow-md transition hover:scale-110" style="background: #6366f1" data-color="#6366f1" title="Indigo (Electric Blue)"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #06b6d4" data-color="#06b6d4" title="Cyan (Aqua)"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #10b981" data-color="#10b981" title="Emerald Green"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #8b5cf6" data-color="#8b5cf6" title="Violet Purple"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #f43f5e" data-color="#f43f5e" title="Rose Red"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #f59e0b" data-color="#f59e0b" title="Amber Gold"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #f97316" data-color="#f97316" title="Sunset Orange"></button>
+                <button type="button" class="btn-accent-color w-7 h-7 rounded-full flex items-center justify-center border-2 border-transparent hover:scale-110 transition" style="background: #0ea5e9" data-color="#0ea5e9" title="Sky Blue"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer flex justify-between items-center">
+          <button id="btn-test-gemini" class="btn btn-secondary text-xs">សាកល្បង Gemini API</button>
+          <button id="btn-save-settings" class="btn btn-primary">រក្សាទុកការកំណត់</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Native Mobile Bottom Navigation Bar (Fixed for Android Phone) -->
+    <nav class="mobile-bottom-nav" id="mobile-nav-bar">
+      <button type="button" class="mobile-tab-btn active" data-tab="preview">
+        <div class="tab-icon-wrap">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polygon points="5 3 19 12 5 21 5 3"/>
+          </svg>
+        </div>
+        <span class="tab-label">វីដេអូ</span>
+      </button>
+
+      <button type="button" class="mobile-tab-btn" data-tab="dubbing">
+        <div class="tab-icon-wrap">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z"/>
+            <path d="M19 10v2a7 7 0 0 1-14 0v-2"/>
+          </svg>
+        </div>
+        <span class="tab-label">សំឡេង</span>
+      </button>
+
+      <button type="button" class="mobile-tab-btn" data-tab="subtitles">
+        <div class="tab-icon-wrap relative">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M4 6h16a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2z"/>
+            <path d="M8 11h8M8 15h5"/>
+          </svg>
+          <span id="tab-subs-count" class="mobile-tab-badge">0</span>
+        </div>
+        <span class="tab-label">អត្ថបទ</span>
+      </button>
+
+      <button type="button" class="mobile-tab-btn" data-tab="queue">
+        <div class="tab-icon-wrap relative">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/>
+          </svg>
+          <span id="tab-queue-count" class="mobile-tab-badge">0</span>
+        </div>
+        <span class="tab-label">បញ្ជី</span>
+      </button>
+    </nav>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Hidden Canvas for Video Rendering & Audio Synthesis -->
+    <canvas id="export-canvas" class="hidden"></canvas>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

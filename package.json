@@ -1,0 +1,30 @@
+{
+  "name": "nha-dx-dubber-pro",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vite build",
+    "start": "node server.js",
+    "preview": "vite preview",
+    "cap:sync": "vite build && cap sync android",
+    "cap:build": "vite build && cap sync android && cd android && gradlew assembleDebug"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@capacitor/android": "^8.5.2",
+    "@capacitor/cli": "^8.5.2",
+    "@capacitor/core": "^8.5.2",
+    "cors": "^2.8.6",
+    "express": "^5.3.0",
+    "fix-webm-duration": "^1.0.6",
+    "msedge-tts": "^2.0.8"
+  },
+  "devDependencies": {
+    "vite": "^8.3.1"
+  }
+}

@@ -1,0 +1,10 @@
+node_modules
+dist
+.git
+.gitignore
+android
+*.apk
+downloaded_mobile_app.js
+downloaded_mobile_style.css
+__pycache__
+*.pyc

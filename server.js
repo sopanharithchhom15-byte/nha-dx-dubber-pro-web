@@ -127,6 +127,57 @@ async function synthesizeEdgeTTS(text, { voice, rate, pitch, volume }) {
 }
 
 /**
+ * Split text into chunks safe for Google Translate TTS (~180 chars)
+ */
+function splitTextForTTS(text, maxLength = 180) {
+  if (text.length <= maxLength) return [text];
+  const parts = text.split(/([\s,។\n]+)/);
+  const chunks = [];
+  let current = '';
+  for (const part of parts) {
+    if ((current + part).length > maxLength) {
+      if (current.trim()) chunks.push(current.trim());
+      current = part;
+    } else {
+      current += part;
+    }
+  }
+  if (current.trim()) chunks.push(current.trim());
+  return chunks.length > 0 ? chunks : [text];
+}
+
+/**
+ * Google Khmer TTS (100% Free, reliable everywhere)
+ */
+async function synthesizeGoogleKhmerTTS(text) {
+  const chunks = splitTextForTTS(text, 180);
+  const audioBuffers = [];
+
+  for (const chunk of chunks) {
+    if (!chunk.trim()) continue;
+    const url = `https://translate.google.com/translate_tts?ie=UTF-8&tl=km&client=tw-ob&q=${encodeURIComponent(chunk.trim())}`;
+    const response = await fetch(url, {
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Google TTS error: HTTP ${response.status}`);
+    }
+
+    const arrayBuffer = await response.arrayBuffer();
+    audioBuffers.push(Buffer.from(arrayBuffer));
+  }
+
+  if (audioBuffers.length === 0) {
+    throw new Error('No audio synthesized by Google TTS');
+  }
+
+  return Buffer.concat(audioBuffers);
+}
+
+/**
  * Text-to-Speech API Endpoint
  * Accepts: { text, voice, rate, pitch, volume, azureKey, azureRegion }
  * Returns: audio/mpeg binary stream
@@ -141,7 +192,7 @@ app.post('/api/tts', async (req, res) => {
   const cleanText = text.trim();
   const selectedVoice = voice || 'km-KH-PisethNeural';
 
-  // 1. If Azure key is provided (either via request or server env), try Azure
+  // 1. If Azure key is provided, try Azure first
   const activeAzureKey = azureKey || process.env.AZURE_SPEECH_KEY;
   if (activeAzureKey && activeAzureKey.trim()) {
     try {
@@ -161,11 +212,11 @@ app.post('/api/tts', async (req, res) => {
       });
       return res.send(audioBuffer);
     } catch (azureErr) {
-      console.warn('Azure TTS failed, attempting Edge TTS fallback:', azureErr.message);
+      console.warn('Azure TTS failed, attempting fallback:', azureErr.message);
     }
   }
 
-  // 2. Try Microsoft Edge TTS (Free Neural Voices)
+  // 2. Try Microsoft Edge TTS (Piseth / Sreymom Neural)
   try {
     const audioBuffer = await synthesizeEdgeTTS(cleanText, {
       voice: selectedVoice,
@@ -181,11 +232,24 @@ app.post('/api/tts', async (req, res) => {
     });
     return res.send(audioBuffer);
   } catch (edgeErr) {
-    console.warn('Edge TTS synthesis error:', edgeErr.message);
-    return res.status(502).json({
+    console.warn('Edge TTS synthesis error, attempting Google Khmer TTS fallback:', edgeErr.message);
+  }
+
+  // 3. Fallback: Ultra-Reliable Google Khmer Neural Voice
+  try {
+    const audioBuffer = await synthesizeGoogleKhmerTTS(cleanText);
+
+    res.set({
+      'Content-Type': 'audio/mpeg',
+      'Content-Length': audioBuffer.length,
+      'Cache-Control': 'public, max-age=86400'
+    });
+    return res.send(audioBuffer);
+  } catch (googleErr) {
+    console.error('All TTS engines failed:', googleErr.message);
+    return res.status(500).json({
       error: 'TTS synthesis failed',
-      details: edgeErr.message,
-      suggestion: 'You can set an Azure Speech Key in Settings for 100% reliable cloud synthesis.'
+      details: googleErr.message
     });
   }
 });

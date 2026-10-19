@@ -10,8 +10,9 @@ RUN npm install --omit=dev=false
 # Copy application files
 COPY . .
 
-# Build Vite frontend
-RUN npm run build
+# Build Vite frontend if src exists, or use pre-built dist
+RUN if [ -d "src" ]; then npm run build; fi && \
+    if [ ! -d "dist" ]; then echo "Error: dist directory not found!" && exit 1; fi
 
 # Clean up devDependencies to save space
 RUN npm prune --production
